@@ -19,10 +19,11 @@ type metrics struct {
 func NewMetrics(reg prometheus.Registerer) *metrics {
 	m := &metrics{
 		requests: prometheus.NewGaugeFunc(prometheus.GaugeOpts{
-			Namespace: "go-server",
+			Namespace: "my_go_server",
 			Name:      "request_counter",
 			Help:      "Number of HTTP requests.",
 		}, func() float64 {
+			fmt.Println("Metrics being scraped.")
 			return float64(requestCount.Load())
 		}),
 	}
