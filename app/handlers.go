@@ -17,13 +17,6 @@ type metrics struct {
 }
 
 func NewMetrics(reg prometheus.Registerer) *metrics {
-	// m := &metrics{
-	// 	requests: prometheus.NewGauge(prometheus.GaugeOpts{
-	// 		Namespace: "go-server",
-	// 		Name:      "request_counter",
-	// 		Help:      "Number of HTTP requests.",
-	// 	}),
-	// }
 	m := &metrics{
 		requests: prometheus.NewGaugeFunc(prometheus.GaugeOpts{
 			Namespace: "go-server",
@@ -38,21 +31,18 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 }
 
 // count is a middleware that increments a global counter.
-func countWrapper(next http.Handler, m *metrics) http.Handler {
+func countWrapper(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/metrics" {
 			requestCount.Add(1)
 		}
-		// m.requests.Set(float64(requestCount.Load()))
 		next.ServeHTTP(w, r)
 	})
 }
 
 func Routes() {
 	reg := prometheus.NewRegistry()
-	m := NewMetrics(reg)
-
-	// m.requests.Set(float64(requestCount.Load()))
+	NewMetrics(reg)
 
 	mux := http.NewServeMux()
 
@@ -71,7 +61,7 @@ func Routes() {
 	})
 
 	// count requests to all handlers
-	handler := countWrapper(mux, m)
+	handler := countWrapper(mux)
 
 	// second arg is a "multiplexer", nil is default
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", handler))
