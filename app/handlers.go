@@ -40,7 +40,9 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 // count is a middleware that increments a global counter.
 func countWrapper(next http.Handler, m *metrics) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestCount.Add(1)
+		if r.URL.Path != "/metrics" {
+			requestCount.Add(1)
+		}
 		// m.requests.Set(float64(requestCount.Load()))
 		next.ServeHTTP(w, r)
 	})
